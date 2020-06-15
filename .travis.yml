@@ -12,11 +12,11 @@ env:
 jobs:
   include:
     - stage: merge-automated-prs
-      python: 3.8
+      if: fork = false
       script: BRANCHES_TO_MERGE_REGEX='^auto-update-' BRANCH_TO_MERGE_INTO=master scripts/travis-automerge.sh
     - stage: deploy
+      if: branch = master
       deploy:
-        if: branch = master
         provider: pypi
         distributions: sdist bdist_wheel
         cleanup: false
