@@ -15,7 +15,7 @@ jobs:
       if: fork = false
       script: BRANCHES_TO_MERGE_REGEX='^auto-update-' BRANCH_TO_MERGE_INTO=master scripts/travis-automerge.sh
     - stage: deploy
-      if: branch = master
+      if: type != pull_request
       deploy:
         provider: pypi
         distributions: sdist bdist_wheel
