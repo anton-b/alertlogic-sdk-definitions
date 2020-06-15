@@ -16,6 +16,7 @@ jobs:
       script: BRANCHES_TO_MERGE_REGEX='^auto-update-' BRANCH_TO_MERGE_INTO=master scripts/travis-automerge.sh
     - stage: deploy
       deploy:
+        if: branch = master
         provider: pypi
         distributions: sdist bdist_wheel
         cleanup: false
