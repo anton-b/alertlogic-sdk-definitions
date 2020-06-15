@@ -16,6 +16,7 @@ deploy:
     repo: "$GITHUB_REPO"
     python: 3.8
 after_success:
+  - chmod a+x scripts/travis-automerge.sh
   - BRANCHES_TO_MERGE_REGEX='^auto-update-' BRANCH_TO_MERGE_INTO=master scripts/travis-automerge.sh
 env:
   matrix:
