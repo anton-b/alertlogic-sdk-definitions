@@ -9,9 +9,15 @@
 export GIT_COMMITTER_EMAIL='support@alertlogic.com'
 export GIT_COMMITTER_NAME='CI bot'
 
-if ! grep -q "$BRANCHES_TO_MERGE_REGEX" <<< "$TRAVIS_BRANCH"; then
+if [ "$TRAVIS_REPO_SLUG" != "$GITHUB_REPO" ]; then
+    printf "PR repo %s is not current %s, exiting\\n" \
+        "$TRAVIS_REPO_SLUG" "$TRAVIS_REPO_SLUG" >&2
+    exit 0
+fi
+
+if ! grep -q "$BRANCHES_TO_MERGE_REGEX" <<< "$TRAVIS_PULL_REQUEST_BRANCH"; then
     printf "Current branch %s doesn't match regex %s, exiting\\n" \
-        "$TRAVIS_BRANCH" "$BRANCHES_TO_MERGE_REGEX" >&2
+        "$TRAVIS_PULL_REQUEST_BRANCH" "$BRANCHES_TO_MERGE_REGEX" >&2
     exit 0
 fi
 
@@ -34,4 +40,4 @@ push_uri="https://$GITHUB_SECRET_TOKEN@github.com/$GITHUB_REPO"
 
 # Redirect to /dev/null to avoid secret leakage
 git push "$push_uri" "$BRANCH_TO_MERGE_INTO" >/dev/null 2>&1
-git push "$push_uri" :"$TRAVIS_BRANCH" >/dev/null 2>&1
+git push "$push_uri" :"$TRAVIS_PULL_REQUEST_BRANCH" >/dev/null 2>&1
