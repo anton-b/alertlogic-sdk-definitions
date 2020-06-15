@@ -6,6 +6,7 @@ with open('README.md') as readme_file:
 requirements = []
 
 setup(
+    
     name='alertlogic-sdk-definitions',
     use_scm_version=True,
     setup_requires=['setuptools_scm'],
