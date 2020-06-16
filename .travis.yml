@@ -1,21 +1,29 @@
-language: python
-python:
-  - 3.8
-  - 3.7
-install: pip install -U tox-travis
-script: tox
 env:
   matrix:
     - GITHUB_REPO=anton-b/alertlogic-sdk-definitions
   global:
     secure: am/vhuvw2njdCn0bBP4F7iHJKgb4wQzdeNnAdHG/FnHtdpV8AEro7UvnWYoJ+cf4uBIAqGxB4dnFZ4zay3o2bpp6oO7zbAAAReaWI6dDwb4Uv+52HWN86566JEgzH+/QR0f1ou/zO4URc2bBhmakTq2UTf+jwABFDHQxYibKcXciQbuqE3B6lr4Fpqwq+WQ0igZ7qFNOQEzQ8SnDCGgDKda9A35xn5ZTapLXdRuM0xG7XOtGAMzIidXdyBdzrdz4tarxGimJdIS+WvUMwRARce8b9adKgKSLm20TOYjh9NPdY9EmE/9gBI1ISte8OnSiFdWyP8Njux3osxaZQeSADUzyCHKfaHZqQKdfro/+AL6TbVGfqi0si7lhTWv09STsIxaOi9o2QVdm7ZFzt5r4z7+akiF5NSA/pIztmQ6XPnzFfNSA8WEpjH/crumL1NWoTmTQRUpEI1+f6BVP567r5KuhvNqtnYf0Babv5WdToIxJ3xXGQEgCk1o5F2U/tpyhjTGDsrHNE4nPAVCn3Jk4KZlBOS+tdG5Exsuu69UqHPPaNxlGnXJcKOxGjS7a0SZ0Vc050c8neBcQcDNnVuM7C2FL9+kTWj3Tgwfa+YKsZDkwq/SzBXwBkQMe3GV10AwQ2tZSeMS4cN2mga5+zIXlV/+nm042WTlwMwL64NzOscY=
+language: python
 jobs:
   include:
+    - stage: test
+      python: 3.8
+      install: pip install -U tox-travis
+      script: tox
+    -
+      python: 3.7
+      install: pip install -U tox-travis
+      script: tox
     - stage: merge-automated-prs
-      if: fork = false
+#      if: sender IN (alcibot, anton-b) # whenever i've got al bot's user
+      if: (fork = false) AND (head_branch =~ /^auto-update-\d*/)
+      python: 3.8
       script: BRANCHES_TO_MERGE_REGEX='^auto-update-' BRANCH_TO_MERGE_INTO=master scripts/travis-automerge.sh
     - stage: deploy
       if: type != pull_request
+      python: 3.8
+      install: pip install -U tox-travis
+      script: tox
       deploy:
         provider: pypi
         distributions: sdist bdist_wheel
