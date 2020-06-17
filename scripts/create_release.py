@@ -9,9 +9,12 @@ import json
 from functools import reduce
 
 
+def make_auth_header(token):
+    return {"Authorization": f"token {token}"}
+
+
 def list_github_tags(token, repo):
-    auth_headers = {"Authorization": token}
-    return requests.get(f"https://api.github.com/repos/{repo}/tags", params=auth_headers).json()
+    return requests.get(f"https://api.github.com/repos/{repo}/tags", headers=make_auth_header(token)).json()
 
 
 def list_version_tags(github_tags):
@@ -36,21 +39,18 @@ def get_latest_version(parsed_tags):
 
 
 def get_branch_commit_sha(token, repo, branch):
-    auth_headers = {"Authorization": token}
     url = f"https://api.github.com/repos/{repo}/branches/{branch}"
-    return requests.get(url, params=auth_headers).json()['commit']['sha']
+    return requests.get(url, headers=make_auth_header(token)).json()['commit']['sha']
 
 
 def get_branch_commit_message(token, repo, branch):
-    auth_headers = {"Authorization": token}
     url = f"https://api.github.com/repos/{repo}/branches/{branch}"
-    return requests.get(url, params=auth_headers).json()['commit']['commit']['message']
+    return requests.get(url, headers=make_auth_header(token)).json()['commit']['commit']['message']
 
 
 def create_lightweight_tag(token, repo, tag_obj):
-    auth_headers = {"Authorization": token}
     url = f"https://api.github.com/repos/{repo}/git/refs"
-    r = requests.post(url, params=auth_headers, data={json.dumps(tag_obj): ""})
+    r = requests.post(url, headers=make_auth_header(token), json=tag_obj)
     # meh, just roughly
     if 201 <= r.status_code < 300:
         return True
@@ -61,9 +61,8 @@ def create_lightweight_tag(token, repo, tag_obj):
 
 
 def create_annotated_tag(token, repo, tag_obj):
-    auth_headers = {"Authorization": token}
     url = f"https://api.github.com/repos/{repo}/git/tags"
-    r = requests.post(url, params=auth_headers, data={json.dumps(tag_obj): ""})
+    r = requests.post(url, headers=make_auth_header(token), json=tag_obj)
     # meh, just roughly
     if 201 <= r.status_code < 300:
         return True
@@ -158,3 +157,5 @@ if __name__ == "__main__":
             else:
                 print(create_log)
                 print("Release aborted, specify -c to actually do release")
+    else:
+        print(f"Commit message {commit_message} don't match {regex}, aborted release")
