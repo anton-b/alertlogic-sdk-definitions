@@ -18,7 +18,7 @@ jobs:
       if: branch = master AND type = push
       python: 3.8
       install: pip install -U packaging requests
-      script: scripts/create_release.py --repo $GITHUB_REPO -c
+      script: scripts/create_release.py --repo $GITHUB_REPO -re "^Definitions Update.*"
     - stage: merge-automated-prs
 #      if: sender IN (alcibot, anton-b) # whenever i've got al bot's user
       if: (fork = false) AND (head_branch =~ /^auto-update-\d*/) AND (type = pull_request)
