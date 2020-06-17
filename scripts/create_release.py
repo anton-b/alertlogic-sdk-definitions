@@ -121,14 +121,17 @@ if __name__ == "__main__":
     commit_sha = get_branch_commit_sha(token, repo, branch)
     commit_message = get_branch_commit_message(token, repo, branch)
     tag_obj = make_tag_object(newrel_version, commit_message, commit_sha)
+    create_log = f"create tag if create release is secified \n{json.dumps(tag_obj, indent=4)} \n" \
+                 f" new commit {latest_sha}, tag {newrel_version}\n " \
+                 f"old commit {commit_sha}, tag {str(latest)}"
     if re.match(regex, commit_message):
         print(f"Commit message {commit_message} matched {regex}, proceeding to release {newrel_version}")
-        if do_release:
-            if latest_sha == commit_sha:
-                print(f"Release aborted release {latest} already created for {commit_sha}")
-            else:
+        if latest_sha == commit_sha:
+            if do_release:
+                print(create_log)
                 create_new_tag(token, repo, tag_obj)
+            else:
+                print(create_log)
+                print("Release aborted, specify -c to actually do release")
         else:
-            print(f"would create tag if create release is secified \n{json.dumps(tag_obj, indent=4)} \n"
-                  f" new commit {latest_sha}, tag {newrel_version}\n"
-                  f" old commit {commit_sha}, tag {str(latest)}")
+            print(f"Release aborted release {latest} already created for {commit_sha}")
