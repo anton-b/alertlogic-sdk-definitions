@@ -34,8 +34,10 @@ git fetch origin $TRAVIS_PULL_REQUEST_BRANCH:$TRAVIS_PULL_REQUEST_BRANCH
 printf 'Checking out %s\n' "$BRANCH_TO_MERGE_INTO" >&2
 git checkout "$BRANCH_TO_MERGE_INTO"
 
-printf 'Merging %s\n' "$TRAVIS_PULL_REQUEST_BRANCH" >&2
-git merge "$TRAVIS_PULL_REQUEST_BRANCH" --ff-only
+MERGE_COMMIT_MESSAGE=`git show-branch --no-name $TRAVIS_PULL_REQUEST_BRANCH`
+
+printf 'Merging %s using "%s" message for if merge commit\n' "$TRAVIS_PULL_REQUEST_BRANCH" "MERGE_COMMIT_MESSAGE" >&2
+git merge "$TRAVIS_PULL_REQUEST_BRANCH" -m '$MERGE_COMMIT_MESSAGE'
 
 printf 'Pushing to %s\n' "$GITHUB_REPO" >&2
 
