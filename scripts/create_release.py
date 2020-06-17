@@ -127,11 +127,11 @@ if __name__ == "__main__":
     if re.match(regex, commit_message):
         print(f"Commit message {commit_message} matched {regex}, proceeding to release {newrel_version}")
         if latest_sha == commit_sha:
+            print(f"Release aborted release {latest} already created for {commit_sha}")
+        else:
             if do_release:
                 print(create_log)
                 create_new_tag(token, repo, tag_obj)
             else:
                 print(create_log)
                 print("Release aborted, specify -c to actually do release")
-        else:
-            print(f"Release aborted release {latest} already created for {commit_sha}")
