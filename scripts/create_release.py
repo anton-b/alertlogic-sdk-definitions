@@ -47,19 +47,40 @@ def get_branch_commit_message(token, repo, branch):
     return requests.get(url, params=auth_headers).json()['commit']['commit']['message']
 
 
-def create_new_tag(token, repo, tag_obj):
+def create_lightweight_tag(token, repo, tag_obj):
     auth_headers = {"Authorization": token}
-    url = f"https://api.github.com/repos/{repo}/git/tags"
-    r = requests.post(url, params=auth_headers, data=tag_obj)
+    url = f"https://api.github.com/repos/{repo}/git/refs"
+    r = requests.post(url, params=auth_headers, data={json.dumps(tag_obj): ""})
     # meh, just roughly
-    if 200 < r.status_code < 300:
+    if 201 <= r.status_code < 300:
         return True
     else:
-        print(f"Failed to create tag {json.dumps(tag_obj, indent=4)}, because {r.status_code}")
+        print(
+            f"Failed to create tag {json.dumps(tag_obj, indent=4)}, because {r.status_code} {json.dumps(r.json(), indent=4)}")
         return False
 
 
-def make_tag_object(version, tag_message, sha, tagger='CI Bot', email='travis@travis'):
+def create_annotated_tag(token, repo, tag_obj):
+    auth_headers = {"Authorization": token}
+    url = f"https://api.github.com/repos/{repo}/git/tags"
+    r = requests.post(url, params=auth_headers, data={json.dumps(tag_obj): ""})
+    # meh, just roughly
+    if 201 <= r.status_code < 300:
+        return True
+    else:
+        print(
+            f"Failed to create tag {json.dumps(tag_obj, indent=4)}, because {r.status_code} {json.dumps(r.json(), indent=4)}")
+        return False
+
+
+def make_lightweight_tag_object(version, sha):
+    return {
+        "ref": f"refs/tags/v{version}",
+        "sha": sha
+    }
+
+
+def make_annotated_tag_object(version, tag_message, sha, tagger='CI Bot', email='travis@travis'):
     date = datetime.datetime.now().astimezone().replace(microsecond=0).isoformat()
     return {
         "tag": f"v{version}",
@@ -92,8 +113,8 @@ if __name__ == "__main__":
     parser.add_argument("-i", "--increment", dest="increment", help="increment minor version by this number",
                         default=1, type=int)
     options = parser.parse_args()
-    token = options.token
-    if not token:
+    sec_token = options.token
+    if not sec_token:
         print("Secret token is not set neither by parameter nor by environment variable")
         exit(1)
     repo = options.repo
@@ -102,11 +123,11 @@ if __name__ == "__main__":
     increment = options.increment
     branch = options.branch
     regex = options.regex
-    tags = list_github_tags(token, repo)
+    tags = list_github_tags(sec_token, repo)
     tag_search = make_tags_search_hash(tags)
     parsed_tags = list_version_tags(tags)
     latest = get_latest_version(parsed_tags)
-    latest_sha = tag_search[latest]['commit']['sha']
+    latest_tag_sha = tag_search[latest]['commit']['sha']
     ma = latest.major
     mi = latest.minor
     mic = latest.micro
@@ -118,20 +139,22 @@ if __name__ == "__main__":
             newrel_version = f"{ma}.{mi}.{newmicro}"
     else:
         newrel_version = f"{ma}.{mi}.{mic + 1}"
-    commit_sha = get_branch_commit_sha(token, repo, branch)
-    commit_message = get_branch_commit_message(token, repo, branch)
-    tag_obj = make_tag_object(newrel_version, commit_message, commit_sha)
-    create_log = f"Will create tag \n{json.dumps(tag_obj, indent=4)} \n" \
-                 f" new commit {latest_sha}, tag {newrel_version}\n " \
-                 f"old commit {commit_sha}, tag {str(latest)}"
+    new_commit_sha = get_branch_commit_sha(sec_token, repo, branch)
+    commit_message = get_branch_commit_message(sec_token, repo, branch)
+    tag_anno_obj = make_annotated_tag_object(newrel_version, commit_message, new_commit_sha)
+    tag_ref_obj = make_lightweight_tag_object(newrel_version, new_commit_sha)
+    create_log = f"Will create tag \n{json.dumps(tag_anno_obj, indent=4)} \n" \
+                 f" new commit {new_commit_sha}, tag {newrel_version}\n " \
+                 f"old commit {latest_tag_sha}, tag {str(latest)}"
     if re.match(regex, commit_message):
         print(f"Commit message {commit_message} matched {regex}, proceeding to release {newrel_version}")
-        if latest_sha == commit_sha:
-            print(f"Release aborted release {latest} already created for {commit_sha}")
+        if latest_tag_sha == new_commit_sha:
+            print(f"Release aborted release {latest} already created for {new_commit_sha}")
         else:
             if do_release:
                 print(create_log)
-                create_new_tag(token, repo, tag_obj)
+                create_annotated_tag(sec_token, repo, tag_anno_obj)
+                create_lightweight_tag(sec_token, repo, tag_ref_obj)
             else:
                 print(create_log)
                 print("Release aborted, specify -c to actually do release")
