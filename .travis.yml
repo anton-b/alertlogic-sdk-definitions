@@ -7,6 +7,7 @@ language: python
 jobs:
   include:
     - stage: test
+      name: "Run python tests"
       python: 3.8
       install: pip install -U tox-travis
       script: tox
@@ -15,16 +16,19 @@ jobs:
       install: pip install -U tox-travis
       script: tox
     - stage: auto_release
+      name: "Automatically release definitions update"
       if: branch = master AND type = push
       python: 3.8
       install: pip install -U packaging requests
       script: scripts/create_release.py --repo $GITHUB_REPO -re "^Definitions Update.*"  --create_release
     - stage: merge-automated-prs
+      name: "Merge pull request produced by automation"
 #      if: sender IN (alcibot, anton-b) # whenever i've got al bot's user
       if: (fork = false) AND (head_branch =~ /^auto-update-\d*/) AND (type = pull_request)
       python: 3.8
       script: BRANCHES_TO_MERGE_REGEX='^auto-update-' BRANCH_TO_MERGE_INTO=master scripts/travis-automerge.sh
     - stage: deploy
+      name: "Deploy to PyPI"
       if: (type != pull_request) AND (tag =~ /^v\d*\.\d*\.\d*$/)
       python: 3.8
       install: pip install -U tox-travis
