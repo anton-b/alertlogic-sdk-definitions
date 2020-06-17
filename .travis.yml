@@ -15,13 +15,13 @@ jobs:
       install: pip install -U tox-travis
       script: tox
     - stage: auto_release
-      if: branch = master
+      if: branch = master AND type = push
       python: 3.8
       install: pip install -U packaging requests
-      script: scripts/create_release.py
+      script: scripts/create_release.py --repo $GITHUB_REPO
     - stage: merge-automated-prs
 #      if: sender IN (alcibot, anton-b) # whenever i've got al bot's user
-      if: (fork = false) AND (head_branch =~ /^auto-update-\d*/)
+      if: (fork = false) AND (head_branch =~ /^auto-update-\d*/) AND (type = pull_request)
       python: 3.8
       script: BRANCHES_TO_MERGE_REGEX='^auto-update-' BRANCH_TO_MERGE_INTO=master scripts/travis-automerge.sh
     - stage: deploy
