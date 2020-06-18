@@ -27,8 +27,8 @@ jobs:
       python: 3.8
       install: pip install -U packaging requests
       script: scripts/create_release.py --repo $GITHUB_REPO -re "^Definitions Update.*"  --create_release
-    - stage: release
-      if: type = push AND tag =~ /^v\d*\.\d*\.\d*$/
+    - stage: github_release
+#      if: type = push AND tag =~ /^v\d*\.\d*\.\d*$/
       name: "(Pipeline Stage 3)Create release containing just definitions"
       script: zip -rj AlertLogicOpenAPIDefinitions.zip alsdkdefs/apis
       deploy:
