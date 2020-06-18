@@ -7,7 +7,7 @@ language: python
 jobs:
   include:
     - stage: test
-      name: "Run python tests"
+      name: "Run python tests "
       python: 3.8
       install: pip install -U tox-travis
       script: tox
