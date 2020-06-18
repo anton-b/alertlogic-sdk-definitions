@@ -28,6 +28,7 @@ jobs:
       install: pip install -U packaging requests
       script: scripts/create_release.py --repo $GITHUB_REPO -re "^Definitions Update.*"  --create_release
     - stage: release
+      if: branch = master AND type = push AND tag =~ /^v\d*\.\d*\.\d*$/
       name: "(Pipeline Stage 3)Create release containing just definitions"
       script: zip -rj AlertLogicOpenAPIDefinitions.zip alsdkdefs/apis
       deploy:
@@ -38,7 +39,7 @@ jobs:
         tags: true
     - stage: deploy
       name: "(Pipeline Stage 4)Deploy to PyPI"
-      if: (type != pull_request) AND (tag =~ /^v\d*\.\d*\.\d*$/)
+      if: branch = master AND type = push AND tag =~ /^v\d*\.\d*\.\d*$/
       python: 3.8
       install: pip install -U tox-travis
       script: tox
