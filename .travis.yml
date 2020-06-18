@@ -34,10 +34,10 @@ jobs:
       deploy:
         provider: releases
         api_key: "$GITHUB_SECRET_TOKEN"
+        cleanup: false
         file: "AlertLogicOpenAPIDefinitions.zip"
         on:
           tags: true
-#          all_branches: true
     - stage: deploy
       name: "(Pipeline Stage 4)Deploy to PyPI"
       if: type = push AND tag =~ /^v\d*\.\d*\.\d*$/
