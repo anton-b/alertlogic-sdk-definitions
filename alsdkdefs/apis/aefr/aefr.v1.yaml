@@ -6,7 +6,7 @@ info:
     email: support@alertlogic.com
   description: Analytics Engine Filter Router Service API
 servers:
-  - url: 'https://api.global-services.global.alertlogic.com'
+  - url: '  https://api.global-services.global.alertlogic.com'
     description: production
     x-alertlogic-session-endpoint: true
   - url: 'https://api.global-integration.product.dev.alertlogic.com'
